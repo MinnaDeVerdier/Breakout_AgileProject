@@ -10,42 +10,56 @@ namespace Breakout
     public class HighScoreEntry
     {
 
-        public string Name;
-        public int HSScore;
-        public HighScoreEntry(string lineFromFile)
+        //public int HSScore;
+        static string dir = "..\\..\\..\\";
+        static string path = Path.GetFullPath(dir);
+        int[] hsScore = new int[3] { 1, 10, 100 };
+        string[] name = new string[3] {"NN","NN","NN"};
+
+        public HighScoreEntry(string contents, int count)
         {
-            string[] field = lineFromFile.Split(",");
-            Name = field[0];
-            HSScore = Convert.ToInt32(field[1]);
+            string[] field = contents.Split(",");
+            name[count] = field[count];
+            hsScore[count] = Convert.ToInt32(field[count++]);
         }
-        public static List<HighScoreEntry> highScoreEntries = new List<HighScoreEntry>();
+     
+        public static List<HighScoreEntry> highScoreEntries = new();
         public static void ReadHighScoreFromFile()
         {
-
-            using (StreamReader file = new StreamReader("HSlist.txt"))
+            string line;
+            int counter = 0;
+            using (StreamReader file = new(path+"HSlist.txt"))
             {
-                string line;
                 while ((line = file.ReadLine()) != null)
-                    highScoreEntries.Add(new HighScoreEntry(line));
+                {
+                    HighScoreEntry addition = new(line, counter);
+                    counter++;
+                }
             }
+        }
+        static void EnterHighScore() 
+        { 
+            Write("Congratulations! \nYou reached our top three highest scores, well played. \nEnter your name: \n> ");
+            string name = ReadLine();
 
         }
         public static void AddHighScoreToFile(string inpName, int newHScore)
         {
-            using (StreamWriter file = new StreamWriter("HSlist.txt", true))
+            string input = inpName+","+newHScore.ToString();
+            using (StreamWriter file = new("..\\..\\..\\HSlist.txt", true))
             {
-
                 file.WriteLine(inpName + "," + newHScore);
             }
         }
         public static void PrintList()
         {
-            highScoreEntries.Sort((x, y) => y.HSScore.CompareTo(x.HSScore));
+            WriteLine(path);
+    /*        highScoreEntries.Sort((x, y) => y.HSScore.CompareTo(x.HSScore));
             foreach (HighScoreEntry highScoreEntry in highScoreEntries)
             {
                 WriteLine($"{highScoreEntry.Name}, {highScoreEntry.HSScore} ");
             }
-            highScoreEntries.Clear();
+         */   //highScoreEntries.Clear();
         }
     }
 

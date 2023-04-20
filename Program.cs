@@ -70,8 +70,8 @@ namespace Breakout
                 else if (input.ToLower() == "h")
                     HelpMenu();
                 else if (input.ToLower() == "s")
-                    WriteLine("Not yet implemented, try another command");
-
+                    HighScoreEntry.PrintList();
+               
             }
             while (true);
         }
