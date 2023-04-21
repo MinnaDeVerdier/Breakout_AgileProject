@@ -64,7 +64,7 @@ namespace Breakout
             {
                 EnterHighScore(2);
             }
-         
+            return;
         }
 
         // Om poängen når topplistan
@@ -103,10 +103,14 @@ namespace Breakout
         }
         public static void PrintList()
         {
+            Clear();
             for (int i = 0; i < 3; i++)
             {
                 WriteLine($"   ~~~~  {i + 1} place  ~~~~  \n {topThree.name[i],-10}  ::  {topThree.hsScore[i]} points.\n");
             }
+            ReadKey(true);
+            Clear();
+            return;
         }
     }
 

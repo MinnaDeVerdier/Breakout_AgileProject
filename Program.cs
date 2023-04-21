@@ -44,6 +44,7 @@ namespace Breakout
         static void Main(string[] args)
         {
 
+            HighScoreEntry.ReadHighScoreFromFile();
             GameMenu();
         }
 
@@ -70,7 +71,10 @@ namespace Breakout
                 else if (input.ToLower() == "h")
                     HelpMenu();
                 else if (input.ToLower() == "s")
+                {
                     HighScoreEntry.PrintList();
+                    Welcome();
+                }
                
             }
             while (true);
@@ -156,7 +160,6 @@ namespace Breakout
                             Gameover = true;
                             PreviousScore = Score;
 
-                            // TODO Print game over ( not success ) screen
                             ReInit();
                             GameMenu();
                         }
@@ -254,11 +257,11 @@ namespace Breakout
                 Write("=============== BREAKDOWN ===============\n\n" +
                     " ___   _         ____  ___   ___   _     ___   ___    __    ___   ____ \r\n| | \\ | | |     | |_  / / \\ | |_) | |   / / \\ | |_)  / /\\  | | \\ | |_  \r\n|_|_/ \\_\\_/     |_|   \\_\\_/ |_| \\ |_|__ \\_\\_/ |_| \\ /_/--\\ |_|_/ |_|__\n\n" +
                     $"Du klarade {(int)Obstacles.Procent}%\n\n" +
-                    $"Du fick {PreviousScore} poäng\n\n" +
-                    "(P)lay\n\n" +
-                          "(Q)uit\n\n" +
-                          "(H)elp\n\n" +
-                          "High(S)core\n");
+                    $"Du fick {PreviousScore} poäng\n\n");
+                ReadKey(true);
+                HighScoreEntry.CheckPlacement();
+                gameover = false;
+                Welcome();
             }
             else
             {
