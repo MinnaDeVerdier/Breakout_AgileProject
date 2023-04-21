@@ -31,7 +31,7 @@ namespace Breakout
             int counter = 0;
             using (StreamReader file = new(hsFile))
             {
-                while ((line = file.ReadLine()) != null)
+                while ((line = file.ReadLine()!) != null)
                 {
                     string[] field = line.Split(",");
                     topThree.name[counter] = field[0];
@@ -70,11 +70,12 @@ namespace Breakout
         // Om poängen når topplistan
         static void EnterHighScore(int place)
         {
+            
             Write("Congratulations! \nYou reached our top three highest scores, well played. \nEnter your name: \n> ");
-            topThree.name[place] = ReadLine();
+            topThree.name[place] = ReadLine()!;
             topThree.hsScore[place] = Program.PreviousScore;
             Write("Temporarily added to Highscore.\nSave highscore list permanently? (y/n) ");
-            string ans = ReadLine();
+            string ans = ReadLine()!;
             if (char.ToLower(ans[0]) == 'y')
             {
                 AddHighScoreToFile();

@@ -1,17 +1,10 @@
 ﻿using static System.Console;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Diagnostics;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Breakout
 {
     public class Obstacles
     {
-        public static int numberOfRows = 3; 
+        public static int NumberOfRows = 3; 
       
         public static int Solids = 0;       
       
@@ -36,27 +29,27 @@ namespace Breakout
         {
             if (type <= 40)
             {
-                this.scorePoints = 100;
-                this.hitPoints = 1;
-                this.colour = "green";
+                scorePoints = 100;
+                hitPoints = 1;
+                colour = "green";
             }
             else if (type > 40 && type < 90)
             {
-                this.scorePoints = 300;
-                this.hitPoints = 2;
-                this.colour = "blue";
+                scorePoints = 300;
+                hitPoints = 2;
+                colour = "blue";
             }
             else if (type >= 90)
             {
-                this.scorePoints = 500;
-                this.hitPoints = 3;
-                this.colour = "red";
+                scorePoints = 500;
+                hitPoints = 3;
+                colour = "red";
             }
 
-            this.xPosition = x;
-            this.yPosition = y;
+            xPosition = x;
+            yPosition = y;
             //Alla börjar med full health oavsett hitpoints
-            this.visualHealthState = visualFull;
+            visualHealthState = visualFull;
             active++;
         }
 
@@ -77,7 +70,7 @@ namespace Breakout
             hinder.Clear();
 
             // Sätt hindrets position på y-axel
-            for (int j = 0; j < numberOfRows; j++)
+            for (int j = 0; j < NumberOfRows; j++)
             {
                 // Sätt hindrets position på x-axeln
                 for (int i = 0; i < 11; i++)

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Reflection.Emit;
-using System.Xml;
-using static System.Console;
+﻿using static System.Console;
 namespace Breakout
 {
     // Integral vektor för position och hastighet i x & y-led
@@ -28,7 +25,7 @@ namespace Breakout
         public const int windowWidth = 80;
         public const int windowHeight = 40;
         public const int margin = 20;
-
+        public static bool won = false;
 
         public static bool newgame = true;
 
@@ -45,14 +42,17 @@ namespace Breakout
         {
 
             HighScoreEntry.ReadHighScoreFromFile();
+            SetupConsole();
             GameMenu();
         }
 
         static void GameMenu()
         {
-            SetupConsole();
-            Clear();
-            SetCursorPosition(0, 0);
+            if (!won)
+            {
+                Clear();
+                SetCursorPosition(0, 0);
+            }
             string? input;
 
             Welcome();
@@ -61,7 +61,7 @@ namespace Breakout
             {
                 Write("> ");
                 input = ReadLine();
-                if (input.ToLower() == "p")
+                if (input!.ToLower() == "p")
                 {
                     bräda = new();
                     Game(bräda);
@@ -75,7 +75,7 @@ namespace Breakout
                     HighScoreEntry.PrintList();
                     Welcome();
                 }
-               
+
             }
             while (true);
         }
@@ -95,103 +95,130 @@ namespace Breakout
             // Startar ny tidtagning
             Timestep = new();
             Timestep.Interval = 100;
-            Timestep.Elapsed += TimerEventStep;
+            Timestep.Elapsed += TimerEventStep!;
             Timestep.Start();
 
             Clear();
-            Ball ball = new(new V2(40, 10), new V2(0, 1));
+            Ball ball = new(new V2(40, 33), new V2(0, -1));
             Obstacles.MakeObstacles();
-            Obstacles.CountObstacles();
+            int nrOfObstaccles = Obstacles.CountObstacles();
             GameBoard.DrawFrame();
             ball.PrintSelf();
 
             // Spel-loop
             while (running)
             {
-                Obstacles.PlaceObstacles();
-
-                // Läser knapptryckningar för brädet
-                if (Console.KeyAvailable)
+                try
                 {
-                    ConsoleKeyInfo key = Console.ReadKey(true);
-                    switch (key.Key)
+                    Obstacles.PlaceObstacles();
+                    // Läser knapptryckningar för brädet
+                    if (Console.KeyAvailable)
                     {
-                        case ConsoleKey.LeftArrow:
-                            pad.MoveLeft();
-                            break;
-                        case ConsoleKey.RightArrow:
-                            pad.MoveRight();
-                            break;
-                        case ConsoleKey.Escape:
-                            ReInit();
-                            GameMenu();
-                            break;
-                        default:
-                            break;
-                    }
-                }
-
-                pad.PrintBoard();
-                GameBoard.DrawStats(Lives, Score);
-
-                // Avslutar banan när 9 hinder är borta
-                if (Obstacles.Active <= 30)
-                {
-                    NewLevelInit();
-                    running = false;
-                }
-
-                if (Steps_since_start > sec)
-                {
-                    bool died = ball.Move();
-                    if (died)
-                    {
-                        ball = new(new V2(40, 10), new V2(0, 1));
-                        if (Lives > 0)
+                        ConsoleKeyInfo key = Console.ReadKey(true);
+                        switch (key.Key)
                         {
-                            Lives--;
-                            int rowToClear = 39;
-                            SetCursorPosition(0, rowToClear);
-                            Write(new string(' ', WindowWidth));
-                            Gameover = false;
-                        }
-                        else if (Lives == 0)
-                        {
-                            Gameover = true;
-                            PreviousScore = Score;
-
-                            ReInit();
-                            GameMenu();
+                            case ConsoleKey.LeftArrow:
+                                pad.MoveLeft();
+                                break;
+                            case ConsoleKey.RightArrow:
+                                pad.MoveRight();
+                                break;
+                            case ConsoleKey.Escape:
+                                ReInit();
+                                GameMenu();
+                                break;
+                            default:
+                                break;
                         }
                     }
-                    else if (!died)
-                    {
-                        sec = Steps_since_start;
-                        ball.PrintSelfClearTrail();
 
+                    pad.PrintBoard();
+                    GameBoard.DrawStats(Lives, Score);
+
+
+                    // if (Obstacles.Active <= nrOfObstaccles - 2)
+                    // ↑ kan bytas ut mot ↓ om man vill ha ett snabt flow genom banorna vid avlusning.
+                    if (Obstacles.Active <= 0 && !won)
+                    {
+                        NewLevelInit();
+                        running = false;
                     }
 
+                    if (Steps_since_start > sec)
+                    {
+                        bool died = ball.Move();
+                        if (died)
+                        {
+                            ball = new(new V2(40, 33), new V2(0, -1));
+                            if (Lives > 0)
+                            {
+                                Lives--;
+                                int rowToClear = 39;
+                                SetCursorPosition(0, rowToClear);
+                                Write(new string(' ', WindowWidth));
+                                Gameover = false;
+                            }
+                            else if (Lives == 0)
+                            {
+                                Gameover = true;
+                                PreviousScore = Score;
+                                ReInit();
+                                GameMenu();
+                            }
+                        }
+                        else if (!died)
+                        {
+                            sec = Steps_since_start;
+                            ball.PrintSelfClearTrail();
+                        }
+                    }
                 }
+                catch (ArgumentOutOfRangeException e)
+                {
+                    SetCursorPosition(0, 0);
+                    WriteLine(e.Message);
+                }
+                catch (Exception e)
+                {
+                    SetCursorPosition(0, 0);
+                    WriteLine(e.Message);
+                    throw;
+                }
+            } // End Of While
+
+            // Om föregående bana hade 
+            int nrOfRowsToWin = 7;
+            if (Obstacles.NumberOfRows == nrOfRowsToWin)
+            {
+                PrintWinnerScreen();
+                Gameover = true;
+                won = true;
+                PreviousScore = Score;
+                ReInit();
+                GameMenu();
             }
-
             PrintSuccesScreen();
+
+
             NextLevel();
 
             static void ReInit()
             {
                 PlayerPad.CurrentFirstXPosition = 35;
+                Obstacles.NumberOfRows = 3;
                 Score = 0;
                 Lives = 3;
                 steps_since_start = 0;
                 Timestep.Stop();
                 newgame = true;
+                
             }
             static void NewLevelInit()
             {
                 PlayerPad.CurrentFirstXPosition = 35;
                 steps_since_start = 0;
                 Timestep.Stop();
-                Obstacles.numberOfRows++;
+                Obstacles.NumberOfRows++;
                 Obstacles.Procent = 0;
                 Obstacles.Active = 0;
                 Obstacles.CheckLimmit += 2;
@@ -232,18 +259,26 @@ namespace Breakout
                 WriteLine(@"/ /_/ |  |  /  \   / / __ \|   |  |   |  \|  ");
                 WriteLine(@"\____ |____/    \_/ (____  |___|  |___|  __  ");
                 WriteLine(@"     \/                  \/     \/     \/\/  ");
-                WriteLine("Tryck valfri knapp för omstart!");
-                ReadKey();
-                ReInit();
+                WriteLine();
             }
         }
 
         private static void SetupConsole()
         {
-            SetWindowSize(1, 1);
-            SetBufferSize(windowWidth + margin, windowHeight);
-            SetWindowSize(windowWidth + margin, windowHeight);
-            CursorVisible = false;
+            if (OperatingSystem.IsWindows())
+            {
+                SetWindowSize(1, 1);
+                SetBufferSize(windowWidth + margin, windowHeight);
+                SetWindowSize(windowWidth + margin, windowHeight);
+                CursorVisible = false;
+            }
+            else
+            {
+                WriteLine("Tyvärr. Det här spelet fungerar endast i windows.");
+                WriteLine("Tryck valfri knapp för avslut.");
+                ReadKey();
+                Environment.Exit(0);
+            }
         }
         public static void TimerEventStep(Object source, System.Timers.ElapsedEventArgs e)
         {
@@ -254,13 +289,17 @@ namespace Breakout
         {
             if (Gameover)
             {
-                Write("=============== BREAKDOWN ===============\n\n" +
-                    " ___   _         ____  ___   ___   _     ___   ___    __    ___   ____ \r\n| | \\ | | |     | |_  / / \\ | |_) | |   / / \\ | |_)  / /\\  | | \\ | |_  \r\n|_|_/ \\_\\_/     |_|   \\_\\_/ |_| \\ |_|__ \\_\\_/ |_| \\ /_/--\\ |_|_/ |_|__\n\n" +
-                    $"Du klarade {(int)Obstacles.Procent}%\n\n" +
-                    $"Du fick {PreviousScore} poäng\n\n");
+                if (!won)
+                {
+                    Write("=============== BREAKDOWN ===============\n\n" +
+                          " ___   _         ____  ___   ___   _     ___   ___    __    ___   ____ \r\n| | \\ | | |     | |_  / / \\ | |_) | |   / / \\ | |_)  / /\\  | | \\ | |_  \r\n|_|_/ \\_\\_/     |_|   \\_\\_/ |_| \\ |_|__ \\_\\_/ |_| \\ /_/--\\ |_|_/ |_|__\n\n");
+                }
+                Write($"Du klarade {(int)Obstacles.Procent}%\n\n" + $"Du fick {PreviousScore} poäng\n\n");
                 ReadKey(true);
                 HighScoreEntry.CheckPlacement();
+                Obstacles.Procent = 0; // Trying
                 gameover = false;
+                won = false;
                 Welcome();
             }
             else

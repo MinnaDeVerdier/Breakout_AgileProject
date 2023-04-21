@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Console;
+﻿using static System.Console;
 
 namespace Breakout
 {
@@ -71,22 +65,22 @@ namespace Breakout
             }
             return false;
         }
-        public void CheckObstacles(ref int ahead)
+        public void CheckObstacles(int ahead)
         {
-            foreach (Obstacles obs in Obstacles.hinder)
+            foreach (Obstacles? obs in from Obstacles obs in Obstacles.hinder
+                                where xyPosition.Y + ahead == obs.YPosition
+                                where (xyPosition.X >= obs.XPosition) && (xyPosition.X < obs.XPosition + 6)
+                                select obs)
             {
-                if (xyPosition.Y + ahead == obs.YPosition && ((xyPosition.X >= obs.XPosition) && (xyPosition.X < obs.XPosition + 6)))
+                if (obs.VisualHealthState == Obstacles.Dead)
                 {
-                    if (obs.VisualHealthState == Obstacles.Dead)
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        obs.BallHit();
-                        speed.Y *= -1;
-                        break;
-                    }
+                    return;
+                }
+                else
+                {
+                    obs.BallHit();
+                    speed.Y *= -1;
+                    break;
                 }
             }
         }
@@ -96,7 +90,7 @@ namespace Breakout
             int ahead = (speed.Y < 0) ? -1 : 1;
             if (xyPosition.Y + ahead <= Obstacles.CheckLimmit)
             {
-                CheckObstacles(ref ahead);
+                CheckObstacles(ahead);
             }
             bool died = CheckWalls();
             if (!died)
