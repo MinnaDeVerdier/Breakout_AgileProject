@@ -297,7 +297,7 @@ namespace Breakout
                 Write($"Du klarade {(int)Obstacles.Procent}%\n\n" + $"Du fick {PreviousScore} poäng\n\n");
                 ReadKey(true);
                 HighScoreEntry.CheckPlacement();
-                Obstacles.Procent = 0; // Trying
+                Obstacles.Procent = 0;
                 gameover = false;
                 won = false;
                 Welcome();
